@@ -167,7 +167,7 @@ const validateDate = (selectedDate: string) => {
     try {
       console.log('Datos enviados:', reservation);
   
-      const response = await axiosInstance.post('http://localhost:8090/api/turno/post', reservation);
+      const response = await axiosInstance.post('/turno/post', reservation);
       if (response.status === 200 || response.status === 201) {
         setNotification({ show: true, message: '¡Reserva confirmada con éxito!', type: 'success' });
       } else {

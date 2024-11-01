@@ -43,7 +43,7 @@ const MisTurnos: React.FC = () => {
 
     const fetchTurnos = async () => {
       try {
-        const response = await axiosInstance.get("http://localhost:8090/api/turno");
+        const response = await axiosInstance.get("/turno");
         const allTurnos = response.data;
         const userTurnos = allTurnos.filter((turno: Turno) => turno.emailCliente === parsedUser.email);
         setTurnos(userTurnos);
