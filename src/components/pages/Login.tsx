@@ -1,60 +1,105 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { api } from '../../axiosConfig'
+import { api } from '../../axiosConfig';
 
-interface JWTResponse {
-  expirationDate: string
-  token: string
+interface User {
+  password: string;
+  username: string;
+  id: string;
+  usuario: string;
+  contrasena: string;
+}
+
+interface UserData {
+  id: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono: string;
+  local?: string;
 }
 
 export default function Login() {
-  const [user, setUsername] = useState('')
-  const [pass, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
 
     try {
-      // Try to login as a barber first
-      const barberoResponse = await api.post('/barbero/login', { user, pass })
-      if (barberoResponse.data.token) {
-        handleSuccessfulLogin(barberoResponse.data, 'barbero')
-        return
+      // Intentar iniciar sesión como barbero
+      const barberoResponse = await api.get('/user/barbero');
+      console.log('Respuesta completa de barbero:', barberoResponse); // Verificar respuesta completa
+      console.log('Datos de barbero:', barberoResponse.data); // Verificar datos específicos
+      let user = barberoResponse.data.find(
+        (u: User) => u.username === username.trim() && u.password === password.trim()
+      );
+      let rol = 'barbero';
+
+      // Si no se encuentra como barbero, intentar como cliente
+      if (!user) {
+        const clienteResponse = await api.get('/user/cliente');
+        console.log('Respuesta completa de cliente:', clienteResponse); // Verificar respuesta completa
+        console.log('Datos de cliente:', clienteResponse.data); // Verificar datos específicos
+        user = clienteResponse.data.find(
+          (u: User) => u.username === username.trim() && u.password === password.trim()
+        );
+        rol = 'cliente';
+      }
+
+      if (user) {
+        // Obtener los datos personales del usuario según el rol
+        let userData: UserData | undefined;
+        if (rol === 'barbero') {
+          const response = await api.get('/barberos');
+          console.log('Datos de barbero en tabla barberos:', response.data); // Verificar datos específicos
+          userData = response.data.find((data: UserData) => data.id === user.id);
+        } else {
+          const response = await api.get('/cliente');
+          console.log('Datos de cliente en tabla clientes:', response.data); // Verificar datos específicos
+          userData = response.data.find((data: UserData) => data.id === user.id);
+        }
+
+        if (userData) {
+          const userInfo = {
+            id: userData.id,
+            rol: rol,
+            nombre: userData.nombre,
+            apellido: userData.apellido,
+            email: userData.email,
+            telefono: userData.telefono,
+            ...(rol === 'barbero' && { local: userData.local })
+          };
+
+          // Guardar los datos en localStorage
+          localStorage.setItem('user', JSON.stringify(userInfo));
+
+          // Redirigir según el rol
+          if (rol === 'barbero') {
+            navigate('/dashboard-barbero');
+          } else {
+            navigate('/barberias-disponibles');
+          }
+        } else {
+          setError('No se encontraron los datos personales del usuario.');
+        }
+      } else {
+        setError('Credenciales inválidas. Por favor, intenta de nuevo.');
       }
     } catch (err) {
-      // If barber login fails, try client login
-      try {
-        const clienteResponse = await api.post('/cliente/login', { user, pass })
-        if (clienteResponse.data.token) {
-          handleSuccessfulLogin(clienteResponse.data, 'cliente')
-          return
-        }
-      } catch (err) {
-        console.error('Error during client login:', err)
-        setError('Credenciales inválidas. Por favor, intenta de nuevo.')
-      }
+      console.error('Error durante el inicio de sesión:', err);
+      setError('Error al iniciar sesión. Por favor, intenta de nuevo.');
     } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleSuccessfulLogin = (jwtResponse: { token: string, expirationDate: string }, rol: string) => {
-    localStorage.setItem('token', jwtResponse.token)
-    localStorage.setItem('rol', rol)
-    if (rol == 'barbero') {
-      navigate('/dashboard-barbero')
-    } else {
-      navigate('/barberias-disponibles')
+      setIsLoading(false);
     }
   };
-  
 
   return (
     <div style={styles.container}>
@@ -65,7 +110,7 @@ export default function Login() {
           <div style={styles.inputGroup}>
             <input
               type="text"
-              value={user}
+              value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Nombre de usuario"
               style={styles.input}
@@ -75,7 +120,7 @@ export default function Login() {
           <div style={styles.inputGroup}>
             <input
               type={showPassword ? 'text' : 'password'}
-              value={pass}
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Contraseña"
               style={styles.input}
