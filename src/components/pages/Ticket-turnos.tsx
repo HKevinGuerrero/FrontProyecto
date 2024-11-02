@@ -20,7 +20,7 @@ const ListaTurnos: React.FC = () => {
   useEffect(() => {
     const fetchTurnos = async () => {
       try {
-        const response = await axiosInstance.get('turnero');
+        const response = await axiosInstance.get('/turnero');
         const allTurnos = response.data;
         
         const localBarberia = localStorage.getItem('local');

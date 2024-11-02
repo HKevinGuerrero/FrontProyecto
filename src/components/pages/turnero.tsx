@@ -102,7 +102,7 @@ const Turnero: React.FC = () => {
   
   const guardarTurno = async (turno: Turno) => {
     try {
-      await axiosInstance.post('turnero/post', turno);
+      await axiosInstance.post('/turnero/post', turno);
       console.log('Turno guardado exitosamente');
     } catch (error) {
       console.error('Error al guardar el turno:', error);

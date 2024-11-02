@@ -42,7 +42,7 @@ const BarberDashboard: React.FC = () => {
 
     const fetchTurnos = async () => {
       try {
-        const response = await axiosInstance.get("/turno");
+        const response = await axiosInstance.get("http://localhost:8090/api/turno");
         console.log("Respuesta de la API:", response.data); // Log de la respuesta completa
 
         const fetchedTurnos = response.data;
@@ -96,7 +96,7 @@ const BarberDashboard: React.FC = () => {
       const updatedTurno = { ...turnoToUpdate, estado: newStatus };
   
       // Realiza la solicitud PUT enviando todo el turno actualizado
-      await axiosInstance.put(`/turno/${id}`, updatedTurno);
+      await axiosInstance.put(`http://localhost:8090/api/turno/${id}`, updatedTurno);
   
       // Actualiza el estado local con el nuevo estado
       setAllTurnos(allTurnos.map(turno => 

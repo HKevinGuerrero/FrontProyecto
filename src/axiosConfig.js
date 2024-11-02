@@ -43,8 +43,6 @@ axiosInstance.interceptors.response.use(
           // Recurso no encontrado
           alert('Recurso no encontrado.');
           break;
-        case 409:
-          break;  
         case 500:
           // Error del servidor
           console.error('Error del servidor:', response.data);
