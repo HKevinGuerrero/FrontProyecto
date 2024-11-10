@@ -117,7 +117,7 @@ const PerfilCliente: React.FC = () => {
 
     try {
       if (userData) {
-        await axiosInstance.put(`/user/cliente/${userData.id}/password`, { currentPassword, newPassword });
+        await axiosInstance.put(`/user/cliente/${userData.id}`, { currentPassword, newPassword });
         setSuccess('Contraseña cambiada con éxito');
         form.reset();
       }
