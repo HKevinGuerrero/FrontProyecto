@@ -141,7 +141,7 @@ const PerfilCliente: React.FC = () => {
 
     try {
       if (userData) {
-        const response = await axiosInstance.post(`/user/payment-methods/${userData.id}`, { cardNumber, expiryDate, cvv });
+        const response = await axiosInstance.put(`/user/cliente/${userData.id}`, { cardNumber, expiryDate, cvv });
         const newPaymentMethod = response.data;
         const updatedPaymentMethods = [...paymentMethods, newPaymentMethod];
         setPaymentMethods(updatedPaymentMethods);
@@ -163,7 +163,7 @@ const PerfilCliente: React.FC = () => {
 
     try {
       if (userData) {
-        await axiosInstance.delete(`/user/payment-methods/${userData.id}/${id}`);
+        await axiosInstance.delete(`/user/cliente/${userData.id}/${id}`);
         const updatedPaymentMethods = paymentMethods.filter(method => method.id !== id);
         setPaymentMethods(updatedPaymentMethods);
         localStorage.setItem('paymentMethods', JSON.stringify(updatedPaymentMethods));
@@ -186,7 +186,7 @@ const PerfilCliente: React.FC = () => {
       setSuccess('');
 
       try {
-        const response = await axiosInstance.post(`/foto/post/${userData.id}`, formData, {
+        const response = await axiosInstance.put(`/imagen/${userData.id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         const updatedUser = { ...userData, imagenPerfil: response.data.imageUrl };
