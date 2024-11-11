@@ -90,7 +90,7 @@ const PerfilBarbero: React.FC = () => {
     const file = e.target.files?.[0];
     if (file && barberData) {
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('imagen', file);
       setIsLoading(true);
       setError('');
       setSuccess('');
