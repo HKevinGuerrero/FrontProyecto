@@ -152,10 +152,17 @@ const PerfilBarbero: React.FC = () => {
         <h1 style={styles.title}>Mi Perfil</h1>
         
         <div style={styles.profileImageContainer}>
+<<<<<<< HEAD
           <img
             src={barberData.imagen ? `https://backendproyecto-tsdw.onrender.com/api/barberos/imagen/${barberData.id}` : '/placeholder.svg?height=100&width=100'}
             alt="Perfil"
             style={styles.profileImage}
+=======
+          <img 
+            src={barberData.imagen || '/placeholder.svg?height=100&width=100'} 
+            alt="Perfil" 
+            style={styles.profileImage} 
+>>>>>>> 2bf7f3a42ea9127ee38fa967a57f6ad2457150de
           />
           <label htmlFor="imageUpload" style={styles.imageUploadLabel}>
             <Camera size={20} />
