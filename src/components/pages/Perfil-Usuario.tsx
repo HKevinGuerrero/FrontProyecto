@@ -111,10 +111,10 @@ const PerfilCliente: React.FC = () => {
     setSuccess('');
 
     const form = e.currentTarget;
-    const currentPassword = (form.elements.namedItem('currentPassword') as HTMLInputElement).value;
     const newPassword = (form.elements.namedItem('newPassword') as HTMLInputElement).value;
-    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
+    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value; // Confirmar contraseña
 
+    // Verifica si la nueva contraseña y la confirmación coinciden
     if (newPassword !== confirmPassword) {
       setError('Las contraseñas nuevas no coinciden');
       setIsLoading(false);
@@ -129,24 +129,17 @@ const PerfilCliente: React.FC = () => {
 
     try {
       if (userData) {
-        const response = await axiosInstance.put(`/user/cliente/${userData.id}`, { currentPassword, newPassword });
-        if (response.status === 200) {
-          setSuccess('Contraseña cambiada con éxito');
-          form.reset();
-        } else {
-          setError('Error al cambiar la contraseña. Por favor, intente de nuevo.');
-        }
+        // Enviar solo la nueva contraseña
+        await axiosInstance.put(`/user/cliente/${userData.id}`, { password: newPassword });
+        setSuccess('Contraseña cambiada con éxito');
+        form.reset();
       }
     } catch (error: any) {
-      if (error.response && error.response.status === 401) {
-        setError('La contraseña actual es incorrecta');
-      } else {
-        setError('Error al cambiar la contraseña. Por favor, intente de nuevo.');
-      }
+      setError('Error al cambiar la contraseña. Por favor, intente de nuevo.');
     } finally {
       setIsLoading(false);
     }
-  };
+};
 
   const handleAddPaymentMethod = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

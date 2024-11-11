@@ -10,16 +10,22 @@ interface BarberData {
   email: string;
   telefono: string;
   especialidad: string;
-  imagenPerfil: string;
+  imagen: string;
 }
 
 interface Credentials {
   username: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 const PerfilBarbero: React.FC = () => {
   const [barberData, setBarberData] = useState<BarberData | null>(null);
-  const [credentials, setCredentials] = useState<Credentials>({ username: '' });
+  const [credentials, setCredentials] = useState<Credentials>({ 
+    username: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
   const [activeTab, setActiveTab] = useState('personal');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -32,7 +38,7 @@ const PerfilBarbero: React.FC = () => {
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         setBarberData(parsedUser);
-        setCredentials({ username: parsedUser.username || '' });
+        setCredentials(prev => ({ ...prev, username: parsedUser.username || '' }));
       }
       setIsLoading(false);
     };
@@ -75,16 +81,35 @@ const PerfilBarbero: React.FC = () => {
     setSuccess('');
 
     try {
-      if (barberData) {
-        await axiosInstance.put(`/user/barbero/${barberData.id}`, credentials);
-        setSuccess('Credenciales actualizadas con éxito');
+      // Verifica si las contraseñas coinciden
+      if (credentials.newPassword !== credentials.confirmPassword) {
+        throw new Error('Las contraseñas no coinciden');
       }
+
+      // Verifica si la nueva contraseña tiene al menos 8 caracteres
+      if (credentials.newPassword.length < 8) {
+        throw new Error('La nueva contraseña debe tener al menos 8 caracteres');
+      }
+
+      // Verifica que barberData no sea null o undefined
+      if (!barberData || !barberData.id) {
+        throw new Error('Datos del barbero no disponibles');
+      }
+      
+      // Si todo es válido, realiza la solicitud PUT para actualizar las credenciales
+      await axiosInstance.put(`/user/barbero/${barberData.id}`, { password: credentials.newPassword });
+      setSuccess('Credenciales actualizadas con éxito');
+
+      // Limpiar campos de contraseña
+      setCredentials(prev => ({ ...prev, newPassword: '', confirmPassword: '' }));
+
     } catch (error) {
-      setError('Error al actualizar las credenciales');
+      setError(error instanceof Error ? error.message : 'Error al actualizar las credenciales');
     } finally {
       setIsLoading(false);
     }
-  };
+};
+
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -99,7 +124,7 @@ const PerfilBarbero: React.FC = () => {
         const response = await axiosInstance.put(`/barberos/imagen/${barberData.id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
-        setBarberData(prev => prev ? { ...prev, imagenPerfil: response.data.imageUrl } : null);
+        setBarberData(prev => prev ? { ...prev, imagen: response.data.imageUrl } : null);
         setSuccess('Imagen de perfil actualizada con éxito');
       } catch (error) {
         setError('Error al actualizar la imagen de perfil');
@@ -128,7 +153,7 @@ const PerfilBarbero: React.FC = () => {
         
         <div style={styles.profileImageContainer}>
           <img 
-            src={barberData.imagenPerfil || '/placeholder.svg?height=100&width=100'} 
+            src={barberData.imagen || '/placeholder.svg?height=100&width=100'} 
             alt="Perfil" 
             style={styles.profileImage} 
           />
@@ -214,9 +239,6 @@ const PerfilBarbero: React.FC = () => {
                 required
               />
             </div>
-            <div style={styles.inputGroup}>
-              
-            </div>
             <button type="submit" style={styles.submitButton} disabled={isLoading}>
               {isLoading ? 'Actualizando...' : 'Actualizar Datos Personales'}
             </button>
@@ -224,31 +246,50 @@ const PerfilBarbero: React.FC = () => {
         )}
 
         {activeTab === 'security' && (
-          <div>
-            <form onSubmit={handleSubmitCredentials} style={styles.form}>
-              <div style={styles.inputGroup}>
-                <label htmlFor="username" style={styles.label}>Nombre de Usuario:</label>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={credentials.username}
-                  onChange={handleCredentialsChange}
-                  style={styles.input}
-                  required
-                />
-              </div>
-              <button type="submit" style={styles.submitButton} disabled={isLoading}>
-                {isLoading ? 'Actualizando...' : 'Actualizar Nombre de Usuario'}
-              </button>
-            </form>
-          </div>
+          <form onSubmit={handleSubmitCredentials} style={styles.form}>
+            <div style={styles.inputGroup}>
+              <label htmlFor="username" style={styles.label}>Nombre de Usuario:</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={credentials.username}
+                onChange={handleCredentialsChange}
+                style={styles.input}
+                required
+              />
+            </div>
+            <div style={styles.inputGroup}>
+              <label htmlFor="newPassword" style={styles.label}>Nueva Contraseña:</label>
+              <input
+                type="password"
+                id="newPassword"
+                name="newPassword"
+                value={credentials.newPassword}
+                onChange={handleCredentialsChange}
+                style={styles.input}
+              />
+            </div>
+            <div style={styles.inputGroup}>
+              <label htmlFor="confirmPassword" style={styles.label}>Confirmar Contraseña:</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={credentials.confirmPassword}
+                onChange={handleCredentialsChange}
+                style={styles.input}
+              />
+            </div>
+            <button type="submit" style={styles.submitButton} disabled={isLoading}>
+              {isLoading ? 'Actualizando...' : 'Actualizar Credenciales'}
+            </button>
+          </form>
         )}
       </div>
     </div>
   );
 };
-
 
 
 const styles = {
