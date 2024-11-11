@@ -134,7 +134,7 @@ export default function Login() {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-          <Link to="/recuperar-contrasena" style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Link>
+          <Link to="/recuperar-contraseña" style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Link>
           <button type="submit" style={styles.button} disabled={isLoading}>
             {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>

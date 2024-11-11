@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, CreditCard, Lock, ArrowLeft, Camera, Plus, Trash2 } from 'lucide-react';
+import { User, CreditCard, Lock, ArrowLeft, Camera, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import axiosInstance from '../../axiosConfig';
 
 interface UserData {
@@ -14,6 +14,7 @@ interface UserData {
 
 interface Credentials {
   username: string;
+  
 }
 
 interface PaymentMethod {
@@ -30,6 +31,11 @@ const PerfilCliente: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showPasswords, setShowPasswords] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -105,28 +111,35 @@ const PerfilCliente: React.FC = () => {
     setSuccess('');
 
     const form = e.currentTarget;
-    const currentPassword = (form.elements.namedItem('currentPassword') as HTMLInputElement).value;
     const newPassword = (form.elements.namedItem('newPassword') as HTMLInputElement).value;
-    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
+    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value; // Confirmar contraseña
 
+    // Verifica si la nueva contraseña y la confirmación coinciden
     if (newPassword !== confirmPassword) {
       setError('Las contraseñas nuevas no coinciden');
       setIsLoading(false);
       return;
     }
 
+    if (newPassword.length < 8) {
+      setError('La nueva contraseña debe tener al menos 8 caracteres');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       if (userData) {
-        await axiosInstance.put(`/user/cliente/${userData.id}`, { currentPassword, newPassword });
+        // Enviar solo la nueva contraseña
+        await axiosInstance.put(`/user/cliente/${userData.id}`, { password: newPassword });
         setSuccess('Contraseña cambiada con éxito');
         form.reset();
       }
-    } catch (error) {
-      setError('Error al cambiar la contraseña');
+    } catch (error: any) {
+      setError('Error al cambiar la contraseña. Por favor, intente de nuevo.');
     } finally {
       setIsLoading(false);
     }
-  };
+};
 
   const handleAddPaymentMethod = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -163,7 +176,7 @@ const PerfilCliente: React.FC = () => {
 
     try {
       if (userData) {
-        await axiosInstance.delete(`/user/cliente/${userData.id}/${id}`);
+        await axiosInstance.delete(`/user/payment-methods/${userData.id}/${id}`);
         const updatedPaymentMethods = paymentMethods.filter(method => method.id !== id);
         setPaymentMethods(updatedPaymentMethods);
         localStorage.setItem('paymentMethods', JSON.stringify(updatedPaymentMethods));
@@ -180,13 +193,13 @@ const PerfilCliente: React.FC = () => {
     const file = e.target.files?.[0];
     if (file && userData) {
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('imagen', file);
       setIsLoading(true);
       setError('');
       setSuccess('');
 
       try {
-        const response = await axiosInstance.put(`/imagen/${userData.id}`, formData, {
+        const response = await axiosInstance.put(`/cliente/imagen/${userData.id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         const updatedUser = { ...userData, imagenPerfil: response.data.imageUrl };
@@ -199,6 +212,10 @@ const PerfilCliente: React.FC = () => {
         setIsLoading(false);
       }
     }
+  };
+
+  const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
+    setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
   if (!userData) {
@@ -338,33 +355,61 @@ const PerfilCliente: React.FC = () => {
             <form onSubmit={handlePasswordChange} style={styles.form}>
               <div style={styles.inputGroup}>
                 <label htmlFor="currentPassword" style={styles.label}>Contraseña Actual:</label>
-                <input
-                  type="password"
-                  id="currentPassword"
-                  name="currentPassword"
-                  style={styles.input}
-                  required
-                />
+                <div style={styles.passwordInputWrapper}>
+                  <input
+                    type={showPasswords.currentPassword ? 'text' : 'password'}
+                    id="currentPassword"
+                    name="currentPassword"
+                    style={styles.input}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility('currentPassword')}
+                    style={styles.passwordToggle}
+                  >
+                    {showPasswords.currentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
               <div style={styles.inputGroup}>
                 <label htmlFor="newPassword" style={styles.label}>Nueva Contraseña:</label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  name="newPassword"
-                  style={styles.input}
-                  required
-                />
+                <div style={styles.passwordInputWrapper}>
+                  <input
+                    type={showPasswords.newPassword ? 'text' : 'password'}
+                    id="newPassword"
+                    name="newPassword"
+                    style={styles.input}
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility('newPassword')}
+                    style={styles.passwordToggle}
+                  >
+                    {showPasswords.newPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
               <div style={styles.inputGroup}>
                 <label htmlFor="confirmPassword" style={styles.label}>Confirmar Nueva Contraseña:</label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  style={styles.input}
-                  required
-                />
+                <div style={styles.passwordInputWrapper}>
+                  <input
+                    type={showPasswords.confirmPassword ? 'text' : 'password'}
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    style={styles.input}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => togglePasswordVisibility('confirmPassword')}
+                    style={styles.passwordToggle}
+                  >
+                    {showPasswords.confirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
               <button type="submit" style={styles.submitButton} disabled={isLoading}>
                 {isLoading ? 'Cambiando...' : 'Cambiar Contraseña'}
@@ -578,6 +623,19 @@ const styles = {
     color: '#ff4d4d',
     cursor: 'pointer',
     marginLeft: 'auto',
+  },
+  passwordInputWrapper: {
+    position: 'relative' as const,
+    display: 'flex',
+    alignItems: 'center',
+  },
+  passwordToggle: {
+    position: 'absolute' as const,
+    right: '10px',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    color: 'white',
   },
 };
 
