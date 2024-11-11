@@ -153,7 +153,7 @@ const PerfilBarbero: React.FC = () => {
         
         <div style={styles.profileImageContainer}>
           <img 
-            src={barberData.imagen || '/placeholder.svg?height=100&width=100'} 
+            src={barberData.imagen ? `${process.env.REACT_APP_API_URL}/cliente/imagen/${barberData.imagen}` : '/placeholder.svg'} 
             alt="Perfil" 
             style={styles.profileImage} 
           />
