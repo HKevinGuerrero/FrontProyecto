@@ -202,7 +202,7 @@ const PerfilCliente: React.FC = () => {
       setSuccess('');
 
       try {
-        const response = await axiosInstance.put(`/user/cliente/${userData.id}`, formData, {
+        const response = await axiosInstance.put(`/cliente/imagen/${userData.id}`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         const updatedUser = { ...userData, imagenPerfil: response.data.imageUrl };
