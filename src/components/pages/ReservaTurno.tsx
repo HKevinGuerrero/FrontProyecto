@@ -105,11 +105,7 @@ const ReservaTurno: React.FC = () => {
 
     const isToday = selectedDateObj.getTime() === today.getTime();
     const currentHour = isToday ? new Date().getHours() : 9;
-<<<<<<< HEAD
     const slots = generateTimeSlots(Math.max(9, currentHour), 21, 75);
-=======
-    const slots = generateTimeSlots(Math.max(9, currentHour), 21, 15);
->>>>>>> 2b3db3ac90cdf537a3118f5afe0736b2d2c8d695
 
     setAvailableHours(isToday ? filterCurrentDaySlots(slots) : slots);
   };
@@ -169,7 +165,7 @@ const validateDate = (selectedDate: string) => {
   const confirmReservation = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.post('http://localhost:8090/api/turno/post', reservation);
+      const response = await axiosInstance.post('/turno/post', reservation);
       setNotification({
         show: true,
         message: response.status === 200 || response.status === 201 ? '¡Reserva confirmada con éxito!' : 'Error en el servidor.',
