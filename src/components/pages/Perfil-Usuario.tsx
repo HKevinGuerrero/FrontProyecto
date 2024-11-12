@@ -354,23 +354,6 @@ const PerfilCliente: React.FC = () => {
             <h3 style={styles.subtitle}>Cambiar Contraseña</h3>
             <form onSubmit={handlePasswordChange} style={styles.form}>
               <div style={styles.inputGroup}>
-                <label htmlFor="currentPassword" style={styles.label}>Contraseña Actual:</label>
-                <div style={styles.passwordInputWrapper}>
-                  <input
-                    type={showPasswords.currentPassword ? 'text' : 'password'}
-                    id="currentPassword"
-                    name="currentPassword"
-                    style={styles.input}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility('currentPassword')}
-                    style={styles.passwordToggle}
-                  >
-                    {showPasswords.currentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
               </div>
               <div style={styles.inputGroup}>
                 <label htmlFor="newPassword" style={styles.label}>Nueva Contraseña:</label>
