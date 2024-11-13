@@ -87,7 +87,7 @@ const BarberDashboard: React.FC = () => {
 
     const fetchTurnos = async () => {
       try {
-        const response = await axiosInstance.get("/turno");
+        const response = await axiosInstance.get("http://localhost:8090/api/turno");
         const fetchedTurnos = response.data;
         if (!Array.isArray(fetchedTurnos)) {
           setError('Error: Los datos recibidos no tienen el formato esperado.');
@@ -111,7 +111,7 @@ const BarberDashboard: React.FC = () => {
       const turnoToUpdate = allTurnos.find(turno => turno.id === id);
       if (!turnoToUpdate) return;
       const updatedTurno = { ...turnoToUpdate, estado: newStatus };
-      await axiosInstance.put(`/turno/${id}`, updatedTurno);
+      await axiosInstance.put(`http://localhost:8090/api/turno/${id}`, updatedTurno);
       setAllTurnos(allTurnos.map(turno => turno.id === id ? { ...turno, estado: newStatus } : turno));
     } catch {
       setError(`Error al actualizar el turno a ${newStatus}. Por favor, intente nuevamente.`);

@@ -3,8 +3,8 @@ import axios from 'axios';
 
 // Crear la instancia de Axios
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:8090/api', //URL base de tu API
-  timeout: 10000, // Tiempo máximo de espera para una petición
+  baseURL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:8090/api',  // URL base de tu API
+  timeout: 25000, // Tiempo máximo de espera para una petición
   headers: {
     'Content-Type': 'application/json',
   },
