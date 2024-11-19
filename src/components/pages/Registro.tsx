@@ -79,18 +79,21 @@ export default function Registro() {
       // Redirigir a la siguiente vista
       navigate('/Registro-Credenciales');
     } catch (err) {
-      console.error('Error al guardar los datos:', err);
       if (err.response) {
-        console.error('Error data:', err.response.data);
-        console.error('Error status:', err.response.status);
-        console.error('Error headers:', err.response.headers);
-        setError(`Error del servidor: ${err.response.status}`);
+        if (err.response.status === 409) {
+          // Mensaje personalizado para conflicto
+          setError('El teléfono o correo electrónico ya se encuentran registrados.');
+          setTimeout(() => setError(''), 8000); // Ocultar el mensaje después de 8 segundos
+        } else {
+          setError(`Error del servidor: ${err.response.status}`);
+          setTimeout(() => setError(''), 8000); // Ocultar el mensaje después de 8 segundos
+        }
       } else if (err.request) {
-        console.error('Error request:', err.request);
         setError('No se recibió respuesta del servidor');
+        setTimeout(() => setError(''), 8000); // Ocultar el mensaje después de 8 segundos
       } else {
-        console.error('Error message:', err.message);
         setError('Error al configurar la solicitud');
+        setTimeout(() => setError(''), 8000); // Ocultar el mensaje después de 8 segundos
       }
     }
   };

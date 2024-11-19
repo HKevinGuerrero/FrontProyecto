@@ -65,12 +65,15 @@ export default function RegistroCredenciales() {
   }, [navigate]);
   
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setNotification({ message: '', type: '' });
-    }, 5000);
-
-    return () => clearTimeout(timer);
+    if (notification.message) {
+      const timer = setTimeout(() => {
+        setNotification({ message: '', type: '' });
+      }, 8000); // Cambiado a 8 segundos
+  
+      return () => clearTimeout(timer);
+    }
   }, [notification]);
+  
 
   const checkPasswordStrength = (password: string) => {
     setPasswordStrength({
@@ -135,12 +138,21 @@ export default function RegistroCredenciales() {
       });
 
       setTimeout(() => navigate('/iniciar-sesion'), 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error durante el registro:', err);
-      setNotification({
-        message: 'Oh no, ha ocurrido un error durante el registro. ¿Podrías intentarlo de nuevo?',
-        type: 'error'
-      });
+
+      if (err.response && err.response.status === 409) { // 409 es el código HTTP para conflicto
+        setNotification({
+          message: 'El usuario ya está registrado. Por favor, utiliza otro nombre de usuario.',
+          type: 'error'
+          
+        });
+      } else {
+        setNotification({
+          message: 'Oh no, ha ocurrido un error durante el registro. ¿Podrías intentarlo de nuevo?',
+          type: 'error'
+        });
+      }
     }
   };
 

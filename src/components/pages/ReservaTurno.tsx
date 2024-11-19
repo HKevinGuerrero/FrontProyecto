@@ -26,7 +26,7 @@ interface Reservation {
 interface Notification {
   show: boolean;
   message: string;
-  type: 'success' | 'error';
+  type: 'success' | 'error' | '';
 }
 
 const initialReservationState: Reservation = {
@@ -62,6 +62,18 @@ const ReservaTurno: React.FC = () => {
       initializeReservation(storedData);
     }
   }, [navigate]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (notification.show) {
+      timer = setTimeout(() => {
+        setNotification(prev => ({ ...prev, show: false }));
+      }, 5000); // 5000 milliseconds = 5 seconds
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [notification.show]);
 
   const fetchStoredData = () => ({
     user: JSON.parse(localStorage.getItem('user') || 'null'),
@@ -118,34 +130,32 @@ const ReservaTurno: React.FC = () => {
     });
   };
 
- 
-   // Modificación en `handleInputChange`
-const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  const { name, value } = e.target;
-  if (name === 'fecha') {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    if (name === 'fecha') {
       if (validateDate(value)) {
-          updateAvailableHours(value);
+        updateAvailableHours(value);
       } else {
-          alert('Por favor, seleccione una fecha válida (hoy o en el futuro).');
-          return;
+        setNotification({
+          show: true,
+          message: 'Por favor, seleccione una fecha válida (hoy o en el futuro).',
+          type: 'error'
+        });
+        return;
       }
-  }
-  setReservation((prev) => ({ ...prev, [name]: value }));
-};
+    }
+    setReservation((prev) => ({ ...prev, [name]: value }));
+  };
 
-// Nueva implementación de `validateDate`:
-const validateDate = (selectedDate: string) => {
-  const today = new Date();
-  const selectedDateObj = new Date(selectedDate);
+  const validateDate = (selectedDate: string) => {
+    const today = new Date();
+    const selectedDateObj = new Date(selectedDate);
 
-  // Redondea el valor de hoy para que sólo cuente la fecha
-  today.setHours(0, 0, 0, 0);
-  selectedDateObj.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    selectedDateObj.setHours(0, 0, 0, 0);
 
-  // Devuelve true si la fecha es hoy o posterior
-  return selectedDateObj.getTime() >= today.getTime();
-};
-
+    return selectedDateObj.getTime() >= today.getTime();
+  };
 
   const toggleService = (service: string) => {
     setReservation((prev) => {
@@ -165,18 +175,37 @@ const validateDate = (selectedDate: string) => {
   const confirmReservation = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.post('http://localhost:8090/api/turno/post', reservation);
+      const response = await axiosInstance.post('/turno/post', reservation);
       setNotification({
         show: true,
         message: response.status === 200 || response.status === 201 ? '¡Reserva confirmada con éxito!' : 'Error en el servidor.',
         type: response.status === 200 || response.status === 201 ? 'success' : 'error'
       });
     } catch (error) {
-      setNotification({ show: true, message: 'Error al confirmar la reserva. Intente nuevamente.', type: 'error' });
+      if (error.response && error.response.status === 409) {
+        setNotification({
+          show: true,
+          message: 'El turno ya está reservado con ese barbero en esa barbería en ese horario. Por favor, elija otro horario o barbero.',
+          type: 'error'
+        });
+      } else {
+        setNotification({
+          show: true,
+          message: 'Error al confirmar la reserva. Intente nuevamente.',
+          type: 'error'
+        });
+      }
     } finally {
+      // Configura el temporizador para ocultar la notificación después de 8 segundos
+      setTimeout(() => {
+        setNotification({ show: false, message: '', type: '' });
+      }, 8000);
+  
       setIsLoading(false);
+      setShowSummary(false);
     }
   };
+  
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -199,7 +228,6 @@ const validateDate = (selectedDate: string) => {
           <div style={styles.formGroup}>
             <label htmlFor="fecha" style={styles.label}>Fecha:</label>
             <div style={styles.inputWrapper}>
-              
               <input
                 type="date"
                 id="fecha"
@@ -215,7 +243,6 @@ const validateDate = (selectedDate: string) => {
           <div style={styles.formGroup}>
             <label htmlFor="hora" style={styles.label}>Hora:</label>
             <div style={styles.inputWrapper}>
-              
               <select
                 id="hora"
                 name="hora"
@@ -223,6 +250,7 @@ const validateDate = (selectedDate: string) => {
                 onChange={handleInputChange}
                 required
                 style={styles.input}
+                disabled={availableHours.length === 0}
               >
                 <option value="">Seleccione una hora</option>
                 {availableHours.map((hour) => (
@@ -279,8 +307,8 @@ const validateDate = (selectedDate: string) => {
           <button type="submit" style={styles.button}>Reservar Turno</button>
         </form>
         <button onClick={() => navigate('/mis-turnos')} style={styles.verTurnosButton}>
-  Ver mis turnos
-</button>
+          Ver mis turnos
+        </button>
       </div>
 
       {showSummary && (
@@ -306,7 +334,6 @@ const validateDate = (selectedDate: string) => {
               <button onClick={confirmReservation} style={styles.confirmButton} disabled={isLoading}>
                 {isLoading ? 'Confirmando...' : 'Confirmar Reserva'}
               </button>
-              
             </div>
           </div>
         </div>
@@ -383,9 +410,6 @@ const styles = {
   inputWrapper: {
     position: 'relative' as const,
   },
-  inputIcon: {
-   
-  },
   input: {
     width: '100%',
     padding: '10px 10px 10px 7px',
@@ -399,7 +423,6 @@ const styles = {
     width: '100%',
     padding: '10px',
     backgroundColor: '#4CAF50',
-    
     color: 'black',
     border: 'none',
     borderRadius: '5px',
@@ -495,21 +518,19 @@ const styles = {
     padding: '10px 20px',
     borderRadius: '5px',
     zIndex: 1000,
-
   },
   verTurnosButton: {
     display: 'flex',
     alignItems: 'center',
     gap: '5px',
     padding: '10px 15px',
-    backgroundColor: '#2196F3', // Color diferente para identificarlo
+    backgroundColor: '#2196F3',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
-    marginTop: '10px', // Ajuste de separación con otros elementos
+    marginTop: '10px',
   },
-  
   errorNotification: {
     position: 'fixed' as const,
     top: '20px',
