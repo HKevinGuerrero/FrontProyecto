@@ -80,7 +80,7 @@ export default function Registro() {
       navigate('/Registro-Credenciales');
     } catch (err) {
       if (err.response) {
-        if (err.response.status === 409) {
+        if (err.response.status === 400) {
           // Mensaje personalizado para conflicto
           setError('El teléfono o correo electrónico ya se encuentran registrados.');
           setTimeout(() => setError(''), 8000); // Ocultar el mensaje después de 8 segundos
