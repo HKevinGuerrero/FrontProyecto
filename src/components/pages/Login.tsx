@@ -41,8 +41,6 @@ export default function Login() {
     try {
       // Intentar iniciar sesión como barbero
       const barberoResponse = await api.get('/user/barbero');
-      console.log('Respuesta completa de barbero:', barberoResponse);
-      console.log('Datos de barbero:', barberoResponse.data);
       let user = barberoResponse.data.find(
         (u: User) => u.username === username.trim() && u.password === password.trim()
       );
@@ -51,8 +49,6 @@ export default function Login() {
       // Si no se encuentra como barbero, intentar como cliente
       if (!user) {
         const clienteResponse = await api.get('/user/cliente');
-        console.log('Respuesta completa de cliente:', clienteResponse);
-        console.log('Datos de cliente:', clienteResponse.data);
         user = clienteResponse.data.find(
           (u: User) => u.username === username.trim() && u.password === password.trim()
         );
