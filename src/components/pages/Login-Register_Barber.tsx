@@ -259,7 +259,7 @@ if (errores.length > 0) {
             <form onSubmit={manejarRegistroPaso2} style={styles.form}>
               <input
                 type="text"
-                placeholder="Dirección del Local"
+                placeholder="Precio Corte"
                 value={direccion}
                 onChange={(e) => setDireccion(e.target.value)}
                 style={styles.input}
