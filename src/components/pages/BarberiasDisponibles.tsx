@@ -27,7 +27,7 @@ const BarberiasDisponibles: React.FC = () => {
   useEffect(() => {
     const fetchBarbershops = async () => {
       try {
-        const response = await axiosInstance.get('local');
+        const response = await axiosInstance.get('adminbarberia');
         setBarbershops(response.data);
         setIsLoading(false);
       } catch (err) {
